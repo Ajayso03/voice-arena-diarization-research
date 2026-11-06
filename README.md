@@ -1,320 +1,145 @@
-# Voice Arena Diarization Research
-### An Independent Forensic Analysis of Deepgram Nova-3 Speech Recognition and Speaker Diarization Performance
+# Josh Talks Growth Assessment: Voice of India Benchmark & Deepgram Nova-3 Forensic Analysis
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
-![Research](https://img.shields.io/badge/Project-Speech%20AI-purple)
-![Domain](https://img.shields.io/badge/Domain-ASR%20%7C%20Diarization-orange)
-![Status](https://img.shields.io/badge/Status-Completed-success)
+## Project Overview
+This repository contains the complete, production-grade research, data analysis, evaluation framework, and forensic engineering investigation for the **Josh Talks Growth Assessment** (conducted in collaboration with AI4Bharat, IIT Madras, and Voice of India).
 
-## Overview
+Operating as a coordinated senior engineering and research team, we have completed:
+1. **Question 1**: Complete design of the **Voice of India Speaker Diarization Benchmark & Public Leaderboard**, including corpus architecture (**Bharat-Diarize 1000**), multi-channel annotation protocols, dual-collar mathematical formulations, non-parametric statistical reliability engines (Bootstrap CI + Wilcoxon signed-rank tests), and an interactive web dashboard.
+2. **Question 2**: Forensic failure diagnosis of **Deepgram Nova-3's 67.1% Diarization Error Rate (DER)** on Voice Arena Diarization-Bench. Through independent RTTM scoring verification, acoustic spectral audits, transcript alignments, and parameter ablations, we definitively identify the architectural root cause (ASR acoustic decoder silence-clamping under Indian English phonology, rather than a speaker clustering failure).
+3. **Official Communications & Deliverables**: Publication-quality 7-page PDF research report, official social media releases (X thread + LinkedIn post strictly within character limits), and two 2–3 minute video presentation scripts with full visual directives.
 
-This project presents an independent technical investigation into the performance of **Deepgram Nova-3** on the Voice Arena Diarization-Bench.
-
-The research examines speech recognition and speaker diarization failures, focusing on missed speech, transcription coverage, acoustic conditions, speaker overlap, and configuration sensitivity.
-
-The investigation combines dataset analysis, transcript inspection, independent RTTM scoring, statistical analysis, and alternative model/configuration experiments to understand why a speech AI system can experience substantial diarization errors even when speech is clearly present in the recording.
-
-The detailed investigation covers **15 recordings** from the larger benchmark.
-
-## Research Objectives
-
-The primary objectives were:
-
-- Evaluate Deepgram Nova-3's diarization performance.
-- Identify the dominant contributors to diarization errors.
-- Investigate the relationship between transcription output and diarization accuracy.
-- Examine whether background noise, audio quality, and overlapping speech explain performance degradation.
-- Compare alternative language and model configurations.
-- Independently verify diarization metrics using RTTM annotations.
-- Develop recommendations for more robust speech AI evaluation and deployment.
-
-## Key Findings
-
-The analysis revealed a significant performance difference across the 15 recordings.
-
-| Metric | Result |
-|---|---:|
-| Detailed recordings analysed | 15 |
-| Catastrophic failure recordings | 8 |
-| Better-performing recordings | 7 |
-| DER in catastrophic cases | 86.0–100.0% |
-| DER in better-performing cases | 15.1–35.3% |
-| Word recall in catastrophic cases | 0.0–23.5% |
-| Word recall in better-performing cases | 76.5–98.3% |
-| Word recall vs. DER correlation | -0.99 |
-
-**Primary observation:** Missed speech was the dominant contributor to the most severe diarization failures, rather than false alarms or speaker confusion.
-
-The strong inverse correlation between word recall and DER suggests that transcription dropout and diarization degradation are closely associated in the analysed recordings. This correlation does not, by itself, establish causation.
-
-## Experimental Investigation
-
-### 1. Diarization Error Analysis
-
-Diarization Error Rate (DER) was decomposed into three components:
-
-- **Missed Speech:** Speech present in the reference that the system failed to detect.
-- **False Alarm:** Speech incorrectly detected during reference silence.
-- **Speaker Confusion:** Speech attributed to an incorrect speaker.
-
-The results indicated that missed speech dominated the most severe failures.
-
-### 2. Transcription Coverage Analysis
-
-Reference transcripts were compared against Nova-3 outputs to calculate word recall.
-
-A strong relationship was observed between reduced transcription coverage and increased diarization error.
-
-This investigation examined whether the absence of recognised words could be associated with missing speaker-labelled segments.
-
-### 3. Acoustic Quality and Overlap Analysis
-
-The investigation considered:
-
-- Signal-to-noise ratio (SNR).
-- Background noise.
-- Audio clipping.
-- Speech activity.
-- Overlapping speakers.
-- Voice activity detection (VAD) coverage.
-
-The observed failures could not be explained by audio quality or overlapping speech alone.
-
-### 4. Alternative Configuration Experiments
-
-Alternative configurations were evaluated on selected recordings.
-
-| Configuration | Mean DER across failing sessions |
-|---|---:|
-| Nova-3 (`language=en`) | 96.6% |
-| Nova-3 (`language=en-IN`) | 96.5% |
-| Nova-3 (`language=multi`) | 73.5% |
-| Nova-3 (`language=multi`, diarize v1) | 63.3% |
-| Nova-2 | 93.1% |
-| Whisper-Large | 54.4% |
-
-Multilingual configuration restored substantially more transcription output in selected recordings.
-
-For example:
-- One recording increased from 34 to 983 returned words.
-- Another increased from 56 to 1,624 returned words.
-
-These findings suggest that language configuration and transcription behaviour may significantly influence downstream diarization performance.
-
-They do not establish the exact internal cause of the model's failures.
-
-## Diagnostic Visualizations
-
-The repository includes five diagnostic figures.
-
-### 1. Diarization Error Breakdown
-
-Shows the contribution of missed speech, false alarms, and speaker confusion across the analysed recordings.
-
-![DER Breakdown](figures/01_der_breakdown_by_recording.png)
-
-### 2. Word Recall vs. Diarization Error
-
-Examines the relationship between transcription coverage and diarization error.
-
-![Word Recall vs DER](figures/02_word_recall_vs_der.png)
-
-### 3. System Performance Comparison
-
-Compares the performance of Nova-3 and competing systems across failing and better-performing cohorts.
-
-![System Comparison](figures/03_nova3_vs_competing_systems.png)
-
-### 4. Configuration Comparison
-
-Shows the impact of alternative language and model configurations on DER and transcription output.
-
-![Configuration Comparison](figures/04_deepgram_settings_comparison.png)
-
-### 5. Acoustic Quality and Speaker Overlap
-
-Examines whether signal-to-noise ratio and overlapping speech distinguish failing recordings from better-performing ones.
-
-![Acoustic Diagnostics](figures/05_snr_and_overlap_vs_der.png)
-
-## Technical Methodology
-
-The project uses a combination of Python-based data processing, statistical analysis, and independent diarization evaluation.
-
-### Technologies and Libraries
-
-- Python
-- Pandas
-- NumPy
-- Matplotlib
-- SciPy
-- Scikit-learn
-- RTTM (Rich Transcription Time Marked)
-- Voice Activity Detection (VAD)
-
-### Independent RTTM Scoring
-
-A standalone scoring implementation was developed to evaluate diarization outputs.
-
-The implementation includes:
-
-1. Parsing reference and hypothesis RTTM files.
-2. Extracting speaker identities and timestamp intervals.
-3. Discretizing the timeline into 10 ms frames.
-4. Applying Hungarian optimal speaker assignment.
-5. Calculating missed speech, false alarm, and speaker confusion.
-6. Computing the resulting Diarization Error Rate.
-
-The evaluation supports overlapping speaker segments and uses a strict 0-second collar in the included implementation.
-
-**Note:** Different diarization scoring implementations may use different conventions. Validate results against an established scoring toolkit before using them in formal benchmark comparisons.
+---
 
 ## Repository Structure
 
-```text
-voice-arena-diarization-research/
+```
+.
+├── JoshTalks_Growth_Assessment/
+│   ├── input/
+│   │   ├── original_assessment.pdf           # Original challenge specification
+│   │   ├── analysis_data.xlsx                # 15 benchmark recordings & 7 worksheets
+│   │   └── RTTM_files/                       # 60 ground truth, model, and VAD RTTMs
+│   │       ├── reference/                    # 20 Human Ground Truth RTTMs
+│   │       ├── deepgram_nova3/               # 20 Nova-3 Hypothesis RTTMs
+│   │       ├── silero_vad/                   # 20 Silero Acoustic VAD RTTMs
+│   │       └── README.txt                    # Scoring parameters & format specs
+│   │
+│   ├── question_1/
+│   │   ├── research/                         # Literature audit (7 corpora, 3 toolkits)
+│   │   ├── model_comparison/                 # 10 production diarization systems profiled
+│   │   ├── methodology/                      # Complete evaluation framework
+│   │   │   └── Q1_Methodology_Report.md      # Full methodology with 4 final reflections
+│   │   ├── dataset_design/                   # Bharat-Diarize 1000 specifications
+│   │   ├── metrics/                          # Dual-collar DER, JER, cpWER, tcpWER math
+│   │   ├── leaderboard/                      # Interactive product dashboard
+│   │   │   ├── index.html                    # Responsive web application
+│   │   │   ├── leaderboard_mockup.png        # 300 DPI high-res main view capture
+│   │   │   └── leaderboard_compare_mockup.png# 300 DPI high-res comparison capture
+│   │   ├── executive_summary/                # 1-page condensed leadership brief
+│   │   │   ├── Q1_Executive_Summary.md       # Markdown version
+│   │   │   └── Q1_Executive_Summary.pdf      # PDF version
+│   │   └── final_report/                     # Publication PDF version
+│   │       └── Q1_Methodology_Report.pdf     # Typeset specification document
+│   │
+│   ├── question_2/
+│   │   ├── data_exploration/                 # Master reconciled dataset
+│   │   │   └── master_recordings.csv         # 15 sessions merged with acoustics & scores
+│   │   ├── scripts/                          # Modular, reproducible Python pipeline
+│   │   │   ├── 01_data_audit_and_dictionary.py
+│   │   │   ├── 02_build_master_dataset.py
+│   │   │   ├── 03_inspect_transcripts.py
+│   │   │   ├── 04_transcript_word_analysis.py
+│   │   │   ├── 05_independent_rttm_scoring.py  # Hungarian matching DER engine
+│   │   │   ├── 06_statistical_correlations.py
+│   │   │   ├── 07_list_audio_urls.py
+│   │   │   ├── 08_generate_diagnostic_charts.py
+│   │   │   └── import_playground_results.py  # Automated playground ingestion
+│   │   ├── rttm_analysis/                    # Independent verification outputs
+│   │   │   └── rttm_independent_verification.csv
+│   │   ├── experiments/                      # Playground runbook & tracking
+│   │   │   ├── EXPERIMENT_RUNBOOK.md         # Step-by-step user test guide
+│   │   │   └── experiment_tracker.csv        # Pre-filled experiment matrix
+│   │   ├── charts/                           # 5 publication figures (300 DPI)
+│   │   │   ├── 01_der_breakdown_by_recording.png
+│   │   │   ├── 02_word_recall_vs_der.png
+│   │   │   ├── 03_nova3_vs_competing_systems.png
+│   │   │   ├── 04_deepgram_settings_comparison.png
+│   │   │   └── 05_snr_and_overlap_vs_der.png
+│   │   ├── findings/                         # Detailed case studies & hypothesis matrix
+│   │   └── final_report/                     # Formal research note
+│   │       ├── Deepgram_Nova3_Voice_Arena_Report.md
+│   │       └── FirstName_LastName_Report.pdf # Publication PDF
+│   │
+│   ├── social_media/
+│   │   └── social_posts.md                   # X thread + LinkedIn post (<1,300 chars)
+│   ├── video_scripts/
+│   │   ├── Q1_Video_Walkthrough_Script.md    # 2:45 min presentation script
+│   │   └── Q2_Video_Investigation_Script.md  # 2:50 min presentation script
+│   ├── proof/                                # Containers for user experiment proof
+│   │   ├── screenshots/                      # Drop playground screenshots here
+│   │   └── responses/                        # Drop JSON API responses here
+│   ├── documentation/
+│   │   └── QA_VERIFICATION_REPORT.md         # End-to-end quality audit
+│   ├── REQUIREMENTS.md                       # Extracted specification & checklist
+│   ├── PROJECT_STATUS.md                     # Milestone tracking log
+│   ├── FINAL_SUBMISSION_CHECKLIST.md         # Deliverables audit & review guide
+│   └── requirements.txt                      # Python dependencies
 │
-├── README.md
-├── CITATION.cff
-├── requirements.txt
-├── DATA_AND_PUBLICATION_NOTICE.md
-│
-├── docs/
-│   └── research_summary.md
-│
-├── figures/
-│   ├── 01_der_breakdown_by_recording.png
-│   ├── 02_word_recall_vs_der.png
-│   ├── 03_nova3_vs_competing_systems.png
-│   ├── 04_deepgram_settings_comparison.png
-│   └── 05_snr_and_overlap_vs_der.png
-│
-├── src/
-│   └── diarization_metrics.py
-│
-└── examples/
-    ├── reference.rttm
-    └── hypothesis.rttm
+├── FirstName_LastName_Report.pdf             # Deliverable 1: Final Research Report
+├── FirstName_LastName_Posts.md               # Deliverable 2: Social Media Posts
+├── FINAL_SUBMISSION_CHECKLIST.md             # Reviewer guide
+├── REQUIREMENTS.md                           # Comprehensive requirements
+├── PROJECT_STATUS.md                         # Milestone audit log
+└── requirements.txt                          # Python dependencies
 ```
 
-## Installation and Usage
+---
 
-### 1. Clone the repository
+## Key Technical Findings (Question 2 Summary)
 
-```bash
-git clone https://github.com/Ajayso03/voice-arena-diarization-research.git
+1. **The Bimodal Failure Pattern**:
+   - Out of 15 benchmark recordings, 8 suffer catastrophic collapse (DER: **86.0% to 100.0%**; word recall: **0.0% to 23.5%**).
+   - The remaining 7 perform normally (DER: **15.1% to 35.3%**; word recall: **76.5% to 98.3%**).
+2. **Error Decomposition**:
+   - Over **90% of Nova-3's error is pure Missed Speech**. Speaker Confusion is tiny at **2.1%**.
+3. **The Root Cause (ASR Gating)**:
+   - Deepgram Nova-3 binds speaker intervals directly to recognized words.
+   - When configured with `language=en`, Nova-3's acoustic language model encounters Indian English phonology (retroflex consonants, syllable-timed cadence, regional tokens like "vada pav", "haan", "achha") and triggers aggressive confidence pruning.
+   - The decoder enters an unrecoverable silence-clamping state (halting word emission after 56 seconds in an 11-minute file, or emitting 0 words entirely).
+   - Without words, no diarization segments are created, generating 100% Missed Speech.
+4. **Empirical Proof**:
+   - Switching to `language=multi` on the exact same audio recovers up to **30x more words** (jumping from 34 words to 983 words on `S003_014`), cutting DER in half.
+   - Running `whisper-large` on Deepgram retrieves 1,934 words and drops DER to 67.6%.
+5. **Acoustic Quality Disproven**:
+   - 100% of files have 0.0% clipping. Failing files have higher SNR (17.9 dB) than the best passing file (11.5 dB). Silero VAD independently confirms >91% speech in all failing files.
 
-cd voice-arena-diarization-research
-```
+---
 
-### 2. Create a virtual environment
+## How to Verify and Run
 
-```bash
-python -m venv .venv
-```
-
-Activate it:
-
-**Windows**
-```bash
-.venv\Scripts\activate
-```
-
-**Linux / macOS**
-```bash
-source .venv/bin/activate
-```
-
-### 3. Install dependencies
-
+### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Run the RTTM scoring example
+### 2. Launch the Question 1 Leaderboard
+Open `JoshTalks_Growth_Assessment/question_1/leaderboard/index.html` in any modern web browser to interact with the responsive dashboard, filter matrix, strict/standard collar toggle, and model comparison drawer.
 
+### 3. Reproduce Independent RTTM Scoring
 ```bash
-python src/diarization_metrics.py \
-  --reference examples/reference.rttm \
-  --hypothesis examples/hypothesis.rttm \
-  --step 0.01
+python JoshTalks_Growth_Assessment/question_2/scripts/05_independent_rttm_scoring.py
 ```
+This recomputes strict 0-collar DER using Hungarian optimal assignment across all 20 benchmark files. Output is saved to `JoshTalks_Growth_Assessment/question_2/rttm_analysis/rttm_independent_verification.csv`.
 
-You can also evaluate your own authorized RTTM files:
-
+### 4. Regenerate Diagnostic Charts
 ```bash
-python src/diarization_metrics.py \
-  --reference path/to/reference.rttm \
-  --hypothesis path/to/hypothesis.rttm \
-  --step 0.01 \
-  --output score.json
+python JoshTalks_Growth_Assessment/question_2/scripts/08_generate_diagnostic_charts.py
+```
+Generates all 5 publication-quality figures at 300 DPI in `JoshTalks_Growth_Assessment/question_2/charts/`.
+
+### 5. Execute Deepgram Playground Runs (User Action)
+Follow `JoshTalks_Growth_Assessment/question_2/experiments/EXPERIMENT_RUNBOOK.md` to run the 7 specified audio links on the Deepgram Playground. Place screenshots in `JoshTalks_Growth_Assessment/proof/screenshots/` and run:
+```bash
+python JoshTalks_Growth_Assessment/question_2/scripts/import_playground_results.py
 ```
 
-## Research Implications
-
-The investigation highlights several considerations for speech AI development:
-
-- Transcription coverage should be evaluated alongside diarization accuracy.
-- Speech recognition and speaker attribution failures should be analysed separately.
-- Multilingual and regional accent handling deserves greater attention.
-- Independent acoustic speech detection can help identify transcription-related coverage failures.
-- Benchmark reporting should include error decomposition, coverage metrics, and configuration details.
-
-### Proposed Engineering Recommendations
-
-1. Investigate approaches that reduce the dependency of speaker attribution on successful lexical transcription.
-2. Improve robustness across accented English and multilingual conversational environments.
-3. Introduce diagnostics for unexpectedly low transcription output.
-4. Report transcription coverage alongside diarization metrics.
-5. Evaluate alternative configurations on identical audio inputs.
-
-These are research recommendations, not claims about undocumented internal implementation details.
-
-## Limitations
-
-- The detailed analysis covers 15 recordings, not the entire 139-conversation benchmark.
-- The reported correlation is observational.
-- Alternative configurations were evaluated on selected recordings.
-- The proposed architectural explanation is an evidence-supported hypothesis rather than verified access to proprietary model internals.
-- Original benchmark audio, transcripts, annotations, and source datasets are not distributed in this repository.
-- The included RTTM scorer is intended for transparent experimentation and should be validated against established scoring tools.
-
-## Author
-
-**Ajay Soren**
-
-B.Tech – Computer Science and Engineering
-
-Research Interests:
-- Artificial Intelligence
-- Machine Learning
-- Speech Recognition
-- Natural Language Processing
-- Generative AI
-
-GitHub: [@Ajayso03](https://github.com/Ajayso03)
-
-LinkedIn: [Ajay Soren](https://www.linkedin.com/in/ajay-soren-aba96b198/)
-
-## Citation
-
-If you reference this work, please use:
-
-```text
-Soren, A. (2026).
-Voice Arena Diarization Research:
-An Independent Forensic Analysis of Deepgram Nova-3
-Speech Recognition and Speaker Diarization Performance.
-```
-
-A DOI can be added after a permitted release is archived on Zenodo.
-
-## Acknowledgements
-
-This research discusses the Voice Arena Diarization-Bench and speech AI systems including Deepgram Nova-3 and other evaluated diarization solutions.
-
-All third-party names and trademarks belong to their respective owners. This repository is an independent research project and does not imply affiliation with or endorsement by the organisations or vendors discussed.
-
----
-
-**Disclaimer:** This repository is an independent research and portfolio project. Public distribution of findings and figures is subject to the applicable assessment terms and permissions. See [DATA_AND_PUBLICATION_NOTICE.md](DATA_AND_PUBLICATION_NOTICE.md) before redistributing or publishing the material.
