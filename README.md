@@ -158,4 +158,163 @@ A standalone scoring implementation was developed to evaluate diarization output
 
 The implementation includes:
 
-1. Parsing reference
+1. Parsing reference and hypothesis RTTM files.
+2. Extracting speaker identities and timestamp intervals.
+3. Discretizing the timeline into 10 ms frames.
+4. Applying Hungarian optimal speaker assignment.
+5. Calculating missed speech, false alarm, and speaker confusion.
+6. Computing the resulting Diarization Error Rate.
+
+The evaluation supports overlapping speaker segments and uses a strict 0-second collar in the included implementation.
+
+**Note:** Different diarization scoring implementations may use different conventions. Validate results against an established scoring toolkit before using them in formal benchmark comparisons.
+
+## Repository Structure
+
+```text
+voice-arena-diarization-research/
+│
+├── README.md
+├── CITATION.cff
+├── requirements.txt
+├── DATA_AND_PUBLICATION_NOTICE.md
+│
+├── docs/
+│   └── research_summary.md
+│
+├── figures/
+│   ├── 01_der_breakdown_by_recording.png
+│   ├── 02_word_recall_vs_der.png
+│   ├── 03_nova3_vs_competing_systems.png
+│   ├── 04_deepgram_settings_comparison.png
+│   └── 05_snr_and_overlap_vs_der.png
+│
+├── src/
+│   └── diarization_metrics.py
+│
+└── examples/
+    ├── reference.rttm
+    └── hypothesis.rttm
+```
+
+## Installation and Usage
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Ajayso03/voice-arena-diarization-research.git
+
+cd voice-arena-diarization-research
+```
+
+### 2. Create a virtual environment
+
+```bash
+python -m venv .venv
+```
+
+Activate it:
+
+**Windows**
+```bash
+.venv\Scripts\activate
+```
+
+**Linux / macOS**
+```bash
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run the RTTM scoring example
+
+```bash
+python src/diarization_metrics.py \
+  --reference examples/reference.rttm \
+  --hypothesis examples/hypothesis.rttm \
+  --step 0.01
+```
+
+You can also evaluate your own authorized RTTM files:
+
+```bash
+python src/diarization_metrics.py \
+  --reference path/to/reference.rttm \
+  --hypothesis path/to/hypothesis.rttm \
+  --step 0.01 \
+  --output score.json
+```
+
+## Research Implications
+
+The investigation highlights several considerations for speech AI development:
+
+- Transcription coverage should be evaluated alongside diarization accuracy.
+- Speech recognition and speaker attribution failures should be analysed separately.
+- Multilingual and regional accent handling deserves greater attention.
+- Independent acoustic speech detection can help identify transcription-related coverage failures.
+- Benchmark reporting should include error decomposition, coverage metrics, and configuration details.
+
+### Proposed Engineering Recommendations
+
+1. Investigate approaches that reduce the dependency of speaker attribution on successful lexical transcription.
+2. Improve robustness across accented English and multilingual conversational environments.
+3. Introduce diagnostics for unexpectedly low transcription output.
+4. Report transcription coverage alongside diarization metrics.
+5. Evaluate alternative configurations on identical audio inputs.
+
+These are research recommendations, not claims about undocumented internal implementation details.
+
+## Limitations
+
+- The detailed analysis covers 15 recordings, not the entire 139-conversation benchmark.
+- The reported correlation is observational.
+- Alternative configurations were evaluated on selected recordings.
+- The proposed architectural explanation is an evidence-supported hypothesis rather than verified access to proprietary model internals.
+- Original benchmark audio, transcripts, annotations, and source datasets are not distributed in this repository.
+- The included RTTM scorer is intended for transparent experimentation and should be validated against established scoring tools.
+
+## Author
+
+**Ajay Soren**
+
+B.Tech – Computer Science and Engineering
+
+Research Interests:
+- Artificial Intelligence
+- Machine Learning
+- Speech Recognition
+- Natural Language Processing
+- Generative AI
+
+GitHub: [@Ajayso03](https://github.com/Ajayso03)
+
+LinkedIn: [Ajay Soren](https://www.linkedin.com/in/ajay-soren-aba96b198/)
+
+## Citation
+
+If you reference this work, please use:
+
+```text
+Soren, A. (2026).
+Voice Arena Diarization Research:
+An Independent Forensic Analysis of Deepgram Nova-3
+Speech Recognition and Speaker Diarization Performance.
+```
+
+A DOI can be added after a permitted release is archived on Zenodo.
+
+## Acknowledgements
+
+This research discusses the Voice Arena Diarization-Bench and speech AI systems including Deepgram Nova-3 and other evaluated diarization solutions.
+
+All third-party names and trademarks belong to their respective owners. This repository is an independent research project and does not imply affiliation with or endorsement by the organisations or vendors discussed.
+
+---
+
+**Disclaimer:** This repository is an independent research and portfolio project. Public distribution of findings and figures is subject to the applicable assessment terms and permissions. See [DATA_AND_PUBLICATION_NOTICE.md](DATA_AND_PUBLICATION_NOTICE.md) before redistributing or publishing the material.
